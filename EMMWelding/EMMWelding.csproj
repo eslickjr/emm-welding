@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Lets you store the SMTP password outside the project with `dotnet user-secrets`. -->
+    <UserSecretsId>emmwelding-3f6c1a2e-8b4d-4c7e-9f1a-2d5e6b7c8a90</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MailKit is the library Microsoft recommends for sending email from .NET. -->
+    <PackageReference Include="MailKit" Version="4.*" />
+  </ItemGroup>
+
+</Project>

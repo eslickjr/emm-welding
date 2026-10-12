@@ -1,0 +1,86 @@
+@page "/"
+@* No @rendermode here, so this page is "static server-side rendered": plain fast HTML, no live connection. *@
+
+<PageTitle>EMM Welding | Structural, Fabrication &amp; Mobile Welding</PageTitle>
+
+<section id="landing" class="hero">
+    <div class="container">
+        <h1 class="hero-title">Line Boring and Welding Services</h1>
+        <p>We are a Family owned and operated company serving NEPA and NY's southern tier delivering high quality welding service's , line boring and emergency weld repairs. With hard work , dirty hands , and doing it right the first time.</p>
+        <a href="tel:570-801-8100">Call us at 570-801-8100</a>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="quote">
+                Get a quote
+                <svg data-bbox="13.05 2.55 33.878 54.8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+                    <g>
+                        <path d="M46.5 28.9L20.6 3c-.6-.6-1.6-.6-2.2 0l-4.8 4.8c-.6.6-.6 1.6 0 2.2l19.8 20-19.9 19.9c-.6.6-.6 1.6 0 2.2l4.8 4.8c.6.6 1.6.6 2.2 0l21-21 4.8-4.8c.8-.6.8-1.6.2-2.2z"></path>
+                    </g>
+                </svg>
+            </a>
+            <a class="btn btn-ghost" href="services">
+                Service's
+                <svg data-bbox="13.05 2.55 33.878 54.8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+                    <g>
+                        <path d="M46.5 28.9L20.6 3c-.6-.6-1.6-.6-2.2 0l-4.8 4.8c-.6.6-.6 1.6 0 2.2l19.8 20-19.9 19.9c-.6.6-.6 1.6 0 2.2l4.8 4.8c.6.6 1.6.6 2.2 0l21-21 4.8-4.8c.8-.6.8-1.6.2-2.2z"></path>
+                    </g>
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="services section">
+    <div class="container">
+        <VideoPlayer Src="videos/work.mp4"
+             Loop="true"
+             MaxWidth="550px" />
+        <a class="btn btn-primary" href="quote">
+            Get a quote
+            <svg data-bbox="13.05 2.55 33.878 54.8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+                <g>
+                    <path d="M46.5 28.9L20.6 3c-.6-.6-1.6-.6-2.2 0l-4.8 4.8c-.6.6-.6 1.6 0 2.2l19.8 20-19.9 19.9c-.6.6-.6 1.6 0 2.2l4.8 4.8c.6.6 1.6.6 2.2 0l21-21 4.8-4.8c.8-.6.8-1.6.2-2.2z"></path>
+                </g>
+            </svg>
+        </a>
+        <h1>Our Services</h1>
+        <p>&emsp;EMM Welding offers an array of services such as structural welding, customer fabrications, heavy machinery and general repairs and line boring. We pride ourselves on being actively engaged with our clients while giving the best experience in the best time frame.</p>
+    </div>
+    <div>
+        <a class="service-card" href="#">
+            <img src="/images/heavy-machinery.avif" alt="Heavy Machinery" />
+            <h3>Heavy Machinery</h3>
+        </a>
+        <a class="service-card" href="#">
+            <img src="/images/pillars.avif" alt="Pillars" />
+            <h3>Structural</h3>
+        </a>
+        <a class="service-card" href="#">
+            <img src="/images/repairs.avif" alt="Repairs" />
+            <h3>Repairs</h3>
+        </a>
+        <a class="service-card" href="#">
+            <img src="/images/custom-fabrication.avif" alt="Custom Fabrication" />
+            <h3>Custom Fabrication</h3>
+        </a>
+        <a class="service-card" href="#">
+            <img src="/images/line-boring.avif" alt="Line Boring" />
+            <h3>Line Boring</h3>
+        </a>
+    </div>
+</section>
+
+<section class="cta-band">
+    <ImageSlider />
+</section>
+
+@code {
+    // A tiny example of C# driving the markup. Later this could come from a database.
+    private record ServiceItem(string Icon, string Title, string Summary);
+
+    private readonly List<ServiceItem> featuredServices =
+    [
+        new("🏗️", "Structural Welding", "Beams, columns, and supports built to spec."),
+        new("🔧", "Custom Fabrication", "Gates, railings, trailers, and one-off builds."),
+        new("🚚", "Mobile Welding", "We come to your site for repairs and installs."),
+    ];
+}

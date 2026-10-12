@@ -1,0 +1,63 @@
+/* CSS isolation: these rules apply ONLY to elements written directly in MainLayout.razor.
+   Blazor rewrites the selectors behind the scenes so they can't leak into other components. */
+
+.site {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.site-main {
+    flex: 1;
+}
+
+.site-footer {
+    background: var(--steel-900);
+    color: var(--steel-200);
+    padding: 3rem 0 1.5rem;
+    margin-top: 4rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.footer-grid p {
+    margin: 0 0 .4rem;
+}
+
+.footer-brand {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #fff;
+    letter-spacing: .02em;
+}
+
+.copyright {
+    margin-top: 2rem;
+    font-size: .85rem;
+    color: var(--steel-400);
+}
+
+#blazor-error-ui {
+    background: #fff4d6;
+    color: #4a3400;
+    bottom: 0;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, .2);
+    display: none;
+    left: 0;
+    padding: .75rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: .75rem;
+    top: .6rem;
+}

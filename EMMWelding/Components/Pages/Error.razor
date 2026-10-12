@@ -1,0 +1,26 @@
+@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error | EMM Welding</PageTitle>
+
+<section class="container section narrow">
+    <h1>Something went wrong</h1>
+    <p>An error occurred while processing your request. Please try again.</p>
+
+    @if (ShowRequestId)
+    {
+        <p><small>Request ID: <code>@RequestId</code></small></p>
+    }
+</section>
+
+@code {
+    // On static pages Blazor can hand you the raw HttpContext, which holds the request's trace id.
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

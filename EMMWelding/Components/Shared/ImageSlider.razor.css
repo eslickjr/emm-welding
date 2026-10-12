@@ -1,0 +1,125 @@
+/* Styles for ImageSlider.razor only (CSS isolation). */
+
+.slider {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--steel-900, #16191d);
+    outline: none;
+}
+
+.slider:focus-visible {
+    outline: 3px solid var(--spark, #ff7a1a);
+    outline-offset: 2px;
+}
+
+.slider-viewport {
+    overflow: hidden;
+    touch-action: pan-y;        /* lets the page scroll vertically but gives us horizontal swipes */
+}
+
+/* All slides sit side by side in one long row; the script slides the row left/right. */
+.slider-track {
+    display: flex;
+    transition: transform .6s ease;
+}
+
+.slider-slide {
+    flex: 0 0 100%;
+    aspect-ratio: var(--slider-ratio, 16 / 9);
+}
+
+.slider-slide img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;          /* fill the box, cropping edges if the photo's shape differs */
+    user-select: none;
+}
+
+/* ---------- Left / right buttons ---------- */
+.slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .45);
+    color: #fff;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.slider-arrow:hover {
+    background: var(--spark, #ff7a1a);
+}
+
+.slider-arrow svg {
+    width: 24px;
+    height: 24px;
+}
+
+.slider-prev { left: 1rem; }
+.slider-next { right: 1rem; }
+
+/* ---------- Dots ---------- */
+.slider-dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: .9rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+    padding: 0 4rem;
+}
+
+.slider-dot {
+    width: 11px;
+    height: 11px;
+    padding: 0;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0 0 3px rgba(0, 0, 0, .5);
+    cursor: pointer;
+}
+
+.slider-dot[aria-current="true"] {
+    background: #fff;
+}
+
+.slider-arrow:focus-visible,
+.slider-dot:focus-visible {
+    outline: 3px solid var(--spark, #ff7a1a);
+    outline-offset: 2px;
+}
+
+/* Hide the controls until the script is running, since they do nothing without it. */
+.slider:not(.slider-ready) .slider-arrow,
+.slider:not(.slider-ready) .slider-dots {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slider-track {
+        transition: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .slider-arrow {
+        width: 38px;
+        height: 38px;
+    }
+
+    .slider-prev { left: .5rem; }
+    .slider-next { right: .5rem; }
+}

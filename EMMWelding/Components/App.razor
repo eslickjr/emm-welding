@@ -1,0 +1,24 @@
+@* The root HTML document. Every page renders inside <Routes />. *@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="EMM Welding – structural, fabrication, and mobile welding services. Request a free quote." />
+    <base href="/" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Auto-generated bundle of every Component.razor.css file (CSS isolation). *@
+    <link rel="stylesheet" href="@Assets["EMMWelding.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <script src="_framework/blazor.web.js"></script>
+    @*<script src="@Assets["js/video-player.js"]"></script>*@
+    <script src="@Assets["js/image-slider.js"]"></script>
+</body>
+
+</html>

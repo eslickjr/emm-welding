@@ -1,0 +1,278 @@
+/* Styles for VideoPlayer.razor only (CSS isolation). */
+
+.vp {
+    --vp-accent: var(--spark, #ff7a1a);
+    --vp-played: 0%;
+    --vp-buffered: 0%;
+    --vp-volume: 100%;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    color: #fff;
+    outline: none;
+    user-select: none;
+}
+
+.vp:focus-visible {
+    outline: 3px solid var(--vp-accent);
+    outline-offset: 2px;
+}
+
+.vp:fullscreen {
+    max-width: none !important;
+    aspect-ratio: auto;
+    border-radius: 0;
+}
+
+.vp-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+/* Until the script takes over, only the browser's built-in controls show. */
+.vp:not(.vp-enhanced) .vp-title,
+.vp:not(.vp-enhanced) .vp-big-play,
+.vp:not(.vp-enhanced) .vp-spinner,
+.vp:not(.vp-enhanced) .vp-controls {
+    display: none;
+}
+
+/* ---------- Title ---------- */
+.vp-title {
+    position: absolute;
+    inset: 0 0 auto 0;
+    padding: .75rem 1rem 1.75rem;
+    background: linear-gradient(rgba(0, 0, 0, .7), transparent);
+    font-weight: 600;
+    pointer-events: none;
+    transition: opacity .25s;
+}
+
+/* ---------- Big center play button ---------- */
+.vp-big-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 72px;
+    height: 72px;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .45);
+    color: #fff;
+    cursor: pointer;
+    transition: background .15s, transform .15s;
+}
+
+.vp-big-play:hover {
+    background: var(--vp-accent);
+    transform: translate(-50%, -50%) scale(1.06);
+}
+
+.vp-big-play svg {
+    width: 40px;
+    height: 40px;
+}
+
+.vp[data-playing="true"] .vp-big-play,
+.vp[data-loading="true"] .vp-big-play {
+    display: none;
+}
+
+/* ---------- Loading spinner ---------- */
+.vp-spinner {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+    border: 4px solid rgba(255, 255, 255, .3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: vp-spin .8s linear infinite;
+    pointer-events: none;
+}
+
+.vp[data-loading="true"] .vp-spinner {
+    display: block;
+}
+
+@keyframes vp-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- Bottom control bar ---------- */
+.vp-controls {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 1.5rem .75rem .5rem;
+    background: linear-gradient(transparent, rgba(0, 0, 0, .8));
+    transition: opacity .25s;
+}
+
+/* Fade controls, title and cursor out while playing and the mouse is still. */
+.vp.vp-idle[data-playing="true"] {
+    cursor: none;
+}
+
+.vp.vp-idle[data-playing="true"] .vp-controls,
+.vp.vp-idle[data-playing="true"] .vp-title {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.vp-bar {
+    display: flex;
+    align-items: center;
+    gap: .15rem;
+    margin-top: .35rem;
+}
+
+.vp-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.vp-btn[hidden] {
+    display: none;
+}
+
+.vp-btn:hover {
+    background: rgba(255, 255, 255, .15);
+}
+
+.vp-btn:focus-visible,
+.vp-seek:focus-visible,
+.vp-volume:focus-visible {
+    outline: 2px solid var(--vp-accent);
+    outline-offset: 2px;
+}
+
+.vp-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Swap icons based on state the script writes as data-* attributes. */
+.vp-icon-pause,
+.vp-icon-muted,
+.vp-icon-exit {
+    display: none;
+}
+
+.vp[data-playing="true"] .vp-icon-play,
+.vp[data-muted="true"] .vp-icon-volume,
+.vp[data-fullscreen="true"] .vp-icon-enter {
+    display: none;
+}
+
+.vp[data-playing="true"] .vp-icon-pause,
+.vp[data-muted="true"] .vp-icon-muted,
+.vp[data-fullscreen="true"] .vp-icon-exit {
+    display: block;
+}
+
+.vp-time {
+    margin-left: .4rem;
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.vp-spacer {
+    flex: 1;
+}
+
+/* ---------- Sliders (seek + volume) ---------- */
+.vp-seek,
+.vp-volume {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    height: 4px;
+    margin: 0;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+/* Orange = played, light grey = downloaded (buffered), dark grey = not loaded yet. */
+.vp-seek {
+    width: 100%;
+    background: linear-gradient(to right,
+        var(--vp-accent) var(--vp-played),
+        rgba(255, 255, 255, .5) var(--vp-played),
+        rgba(255, 255, 255, .5) var(--vp-buffered),
+        rgba(255, 255, 255, .2) var(--vp-buffered));
+    transition: height .1s;
+}
+
+.vp-seek:hover {
+    height: 6px;
+}
+
+.vp-volume {
+    width: 70px;
+    background: linear-gradient(to right,
+        #fff var(--vp-volume),
+        rgba(255, 255, 255, .3) var(--vp-volume));
+}
+
+.vp-seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.vp-volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.vp-seek::-moz-range-thumb,
+.vp-volume::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.vp-seek::-moz-range-track,
+.vp-volume::-moz-range-track {
+    background: transparent;
+}
+
+@media (max-width: 480px) {
+    .vp-volume {
+        display: none;
+    }
+
+    .vp-big-play {
+        width: 56px;
+        height: 56px;
+    }
+}

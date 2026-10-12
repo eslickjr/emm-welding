@@ -1,0 +1,39 @@
+@page "/services"
+
+<PageTitle>Services | EMM Welding</PageTitle>
+
+<section class="page-header">
+    <div class="container">
+        <h1>Services</h1>
+        <p class="lead">TODO: confirm this list with the client.</p>
+    </div>
+</section>
+
+<section class="container section">
+    <div class="service-list">
+        @foreach (var service in services)
+        {
+            <article class="service-row">
+                <h2>@service.Title</h2>
+                <p>@service.Description</p>
+            </article>
+        }
+    </div>
+
+    <p class="center">
+        <a class="btn btn-primary" href="quote">Request a Quote</a>
+    </p>
+</section>
+
+@code {
+    private record Service(string Title, string Description);
+
+    private readonly List<Service> services =
+    [
+        new("Structural Welding", "Steel beams, columns, stairs, and supports for commercial and residential projects."),
+        new("Custom Fabrication", "Gates, handrails, brackets, trailers, and custom metalwork built in our shop."),
+        new("Mobile & On-Site Welding", "Our truck comes to you for field repairs, farm equipment, and installations."),
+        new("Repair & Maintenance", "Cracked frames, broken equipment, and worn parts welded back into service."),
+        new("Aluminum & Stainless", "TIG welding for aluminum and stainless steel where finish matters."),
+    ];
+}

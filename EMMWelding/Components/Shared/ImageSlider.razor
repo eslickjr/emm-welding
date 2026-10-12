@@ -1,0 +1,109 @@
+@*
+    An auto-playing image slider with left/right buttons.
+    Usage:
+        <ImageSlider />                                        (uses wwwroot/images/slider)
+        <ImageSlider Folder="images/gallery" IntervalSeconds="4" AspectRatio="21 / 9" />
+
+    The C# below runs on the server and lists every image in the folder, so adding or removing
+    a photo is just a matter of dropping it in the folder. Images show in file-name order, so
+    name them 01-gate.jpg, 02-railing.jpg, ... to control the order.
+
+    The sliding, timer and buttons live in wwwroot/js/image-slider.js (browser-side, like the video player).
+*@
+@inject IWebHostEnvironment Env
+@inject ILogger<ImageSlider> Logger
+
+@if (images.Count > 0)
+{
+    <section class="slider" data-image-slider data-interval="@(IntervalSeconds * 1000)"
+             style="--slider-ratio: @AspectRatio" tabindex="0"
+             aria-roledescription="carousel" aria-label="@Label">
+
+        <div class="slider-viewport">
+            <div class="slider-track">
+                @for (var i = 0; i < images.Count; i++)
+                {
+                    <div class="slider-slide" role="group" aria-roledescription="slide"
+                         aria-label="@($"{i + 1} of {images.Count}")">
+                        <img src="@images[i].Url" alt="@images[i].Alt" draggable="false"
+                             loading="@(i == 0 ? "eager" : "lazy")" decoding="async" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (images.Count > 1)
+        {
+            <button type="button" class="slider-arrow slider-prev" data-slider-prev aria-label="Previous image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7" />
+                </svg>
+            </button>
+
+            <button type="button" class="slider-arrow slider-next" data-slider-next aria-label="Next image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            <div class="slider-dots">
+                @for (var i = 0; i < images.Count; i++)
+                {
+                    <button type="button" class="slider-dot" data-slider-dot aria-label="@($"Show image {i + 1}")"></button>
+                }
+            </div>
+        }
+    </section>
+}
+
+@code {
+    /// <summary>Folder inside wwwroot to read images from.</summary>
+    [Parameter] public string Folder { get; set; } = "images/slider";
+
+    /// <summary>Seconds between automatic slides.</summary>
+    [Parameter] public int IntervalSeconds { get; set; } = 5;
+
+    /// <summary>Shape of the slider box, e.g. "16 / 9", "4 / 3", "21 / 9". Images are cropped to fill it.</summary>
+    [Parameter] public string AspectRatio { get; set; } = "16 / 9";
+
+    /// <summary>Read aloud by screen readers.</summary>
+    [Parameter] public string Label { get; set; } = "Project photos";
+
+    private static readonly HashSet<string> ImageExtensions =
+        new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif" };
+
+    private record SlideImage(string Url, string Alt);
+
+    private List<SlideImage> images = new();
+
+    protected override void OnInitialized()
+    {
+        var folder = Folder.Trim('/');
+
+        // WebRootFileProvider = the wwwroot folder, both on your machine and once deployed.
+        images = Env.WebRootFileProvider.GetDirectoryContents(folder)
+            .Where(file => !file.IsDirectory && ImageExtensions.Contains(Path.GetExtension(file.Name)))
+            .OrderBy(file => file.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(file => new SlideImage($"{folder}/{Uri.EscapeDataString(file.Name)}", ToAltText(file.Name)))
+            .ToList();
+
+        if (images.Count == 0)
+        {
+            Logger.LogWarning("ImageSlider found no images in wwwroot/{Folder}.", folder);
+        }
+    }
+
+    // Builds alt text from the file name: "02-custom-gate.jpg" -> "Custom gate".
+    // Rename files descriptively and screen-reader users get a sensible description for free.
+    private static string ToAltText(string fileName)
+    {
+        var words = Path.GetFileNameWithoutExtension(fileName)
+            .Replace('-', ' ')
+            .Replace('_', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .SkipWhile(word => word.All(char.IsDigit));   // drop a leading "01", "02"...
+
+        var text = string.Join(' ', words);
+        return text.Length == 0 ? "Project photo" : char.ToUpper(text[0]) + text[1..];
+    }
+}

@@ -1,0 +1,234 @@
+@page "/quote"
+@* This is the only interactive page. InteractiveServer means the C# below runs on the server
+   and talks to the browser over a live connection (SignalR). That lets us handle file
+   uploads and send email without exposing any secrets to the browser. *@
+@rendermode InteractiveServer
+@inject IEmailService EmailService
+@inject ILogger<Quote> Logger
+
+<PageTitle>Request a Quote | EMM Welding</PageTitle>
+
+<section class="page-header">
+    <div class="container">
+        <h1>Request a Quote</h1>
+        <p class="lead">Tell us about the job. Photos help us give you an accurate price.</p>
+    </div>
+</section>
+
+<section class="container section narrow">
+    @if (submitted)
+    {
+        <div class="alert alert-success" role="status">
+            <h2>Thanks, @submittedName!</h2>
+            <p>Your request was sent. We'll be in touch soon.</p>
+            <button class="btn btn-ghost-dark" @onclick="StartOver">Send another request</button>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="model" OnValidSubmit="HandleSubmitAsync" FormName="quote" class="form">
+            <DataAnnotationsValidator />
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="name">Full name *</label>
+                    <InputText id="name" @bind-Value="model.Name" autocomplete="name" />
+                    <ValidationMessage For="() => model.Name" />
+                </div>
+                <div class="field">
+                    <label for="phone">Phone</label>
+                    <InputText id="phone" type="tel" @bind-Value="model.Phone" autocomplete="tel" />
+                    <ValidationMessage For="() => model.Phone" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="email">Email *</label>
+                <InputText id="email" type="email" @bind-Value="model.Email" autocomplete="email" />
+                <ValidationMessage For="() => model.Email" />
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="service">Type of work *</label>
+                    <InputSelect id="service" @bind-Value="model.ServiceType">
+                        <option value="">Choose one…</option>
+                        @foreach (var option in serviceOptions)
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => model.ServiceType" />
+                </div>
+                <div class="field">
+                    <label for="location">Job location (city)</label>
+                    <InputText id="location" @bind-Value="model.JobLocation" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="description">Describe the job *</label>
+                <InputTextArea id="description" rows="6" @bind-Value="model.Description"
+                               placeholder="What needs to be welded or built? Sizes, materials, timeline…" />
+                <ValidationMessage For="() => model.Description" />
+            </div>
+
+            <div class="field">
+                <label for="photos">Photos (optional, up to @MaxFiles, @(MaxFileSizeBytes / 1024 / 1024) MB each)</label>
+                <InputFile id="photos" OnChange="OnFilesSelectedAsync" multiple accept="image/*" disabled="@isLoadingFiles" />
+
+                @if (isLoadingFiles)
+                {
+                    <p class="hint">Uploading photos…</p>
+                }
+
+                @foreach (var error in fileErrors)
+                {
+                    <p class="validation-message">@error</p>
+                }
+
+                @if (model.Photos.Count > 0)
+                {
+                    <ul class="file-list">
+                        @foreach (var photo in model.Photos)
+                        {
+                            <li>
+                                <span>📷 @photo.FileName <small>(@FormatSize(photo.Data.Length))</small></span>
+                                <button type="button" class="link-button" @onclick="() => RemovePhoto(photo)">Remove</button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            @if (errorMessage is not null)
+            {
+                <div class="alert alert-error" role="alert">@errorMessage</div>
+            }
+
+            <button type="submit" class="btn btn-primary btn-block" disabled="@(isSubmitting || isLoadingFiles)">
+                @(isSubmitting ? "Sending…" : "Send Quote Request")
+            </button>
+        </EditForm>
+    }
+</section>
+
+@code {
+    // Limits. Most email providers reject messages over ~25 MB, so the total is capped below that.
+    private const int MaxFiles = 5;
+    private const long MaxFileSizeBytes = 10 * 1024 * 1024;   // 10 MB per photo
+    private const long MaxTotalBytes = 20 * 1024 * 1024;      // 20 MB for all photos
+    private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif"];
+
+    private readonly string[] serviceOptions =
+    [
+        "Structural Welding",
+        "Custom Fabrication",
+        "Mobile / On-Site Welding",
+        "Repair & Maintenance",
+        "Aluminum & Stainless",
+        "Other",
+    ];
+
+    private QuoteRequest model = new();
+    private readonly List<string> fileErrors = new();
+    private bool isLoadingFiles;
+    private bool isSubmitting;
+    private bool submitted;
+    private string submittedName = "";
+    private string? errorMessage;
+
+    // Runs as soon as the user picks files. The bytes are copied into memory right away,
+    // because the browser's file handles don't stay valid for long.
+    private async Task OnFilesSelectedAsync(InputFileChangeEventArgs e)
+    {
+        fileErrors.Clear();
+        isLoadingFiles = true;
+
+        try
+        {
+            foreach (var file in e.GetMultipleFiles(maximumFileCount: 20))
+            {
+                var fileName = Path.GetFileName(file.Name);
+                var extension = Path.GetExtension(fileName).ToLowerInvariant();
+                var totalSoFar = model.Photos.Sum(p => (long)p.Data.Length);
+
+                if (model.Photos.Count >= MaxFiles)
+                {
+                    fileErrors.Add($"You can attach up to {MaxFiles} photos.");
+                    break;
+                }
+                if (!AllowedExtensions.Contains(extension))
+                {
+                    fileErrors.Add($"{fileName} isn't a supported image type.");
+                    continue;
+                }
+                if (file.Size > MaxFileSizeBytes)
+                {
+                    fileErrors.Add($"{fileName} is larger than {MaxFileSizeBytes / 1024 / 1024} MB.");
+                    continue;
+                }
+                if (totalSoFar + file.Size > MaxTotalBytes)
+                {
+                    fileErrors.Add($"{fileName} would push the photos over {MaxTotalBytes / 1024 / 1024} MB total.");
+                    continue;
+                }
+
+                await using var stream = file.OpenReadStream(MaxFileSizeBytes);
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+
+                var contentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
+                model.Photos.Add(new QuoteAttachment(fileName, contentType, memory.ToArray()));
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            fileErrors.Add("That's too many files at once. Please pick fewer photos.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to read an uploaded photo.");
+            fileErrors.Add("One of the photos couldn't be uploaded. Please try again.");
+        }
+        finally
+        {
+            isLoadingFiles = false;
+        }
+    }
+
+    private void RemovePhoto(QuoteAttachment photo) => model.Photos.Remove(photo);
+
+    // Only called when every validation rule on QuoteRequest passes.
+    private async Task HandleSubmitAsync()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            await EmailService.SendQuoteRequestAsync(model);
+            submittedName = model.Name;
+            submitted = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to send quote request from {Email}.", model.Email);
+            errorMessage = "Sorry, something went wrong sending your request. Please try again or give us a call.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void StartOver()
+    {
+        model = new QuoteRequest();
+        fileErrors.Clear();
+        submitted = false;
+    }
+
+    private static string FormatSize(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024d:0} KB";
+}

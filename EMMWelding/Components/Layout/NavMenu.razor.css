@@ -1,0 +1,45 @@
+#header-inner {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#header-inner .brand {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#logo {
+    align-self: flex-start;
+    width: 100px;
+    height: 100px;
+}
+
+#brand-title {
+    font-weight: bold;
+    font-size: 24px;
+    text-align: center;
+    font-family: marcellus, marcellus, serif;
+}
+
+#brand-subtitle {
+    font-size: 16px;
+    text-align: center;
+    font-family: syne, sans-serif;
+    font-weight: normal;
+}
+
+#brand-location {
+    font-size: 20px;
+    text-align: center;
+    font-family: syne, sans-serif;
+    font-weight: normal;
+}
+
+#brand-phone {
+    font-size: 20px;
+    text-align: center;
+    font-family: "Avenir Heavy", sans-serif;
+    font-weight: normal;
+}
